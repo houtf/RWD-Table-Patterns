@@ -93,6 +93,21 @@
             $.proxy(that.updateSpanningCells(), that);
 
         });
+
+        //add loc memory
+        var __key__ = location.href.split('/').pop(),
+            __arr__;
+        if(localStorage[__key__]) {
+            __arr__ = localStorage[__key__].split(',');     
+        }else {
+            __arr__ = [];
+            for (var i = $('.dropdown-menu li.checkbox-row').length - 1; i >= 0; i--) {
+                __arr__.push(1);    
+            }
+            localStorage[__key__] = __arr__.toString();    
+        }
+        this.__arr__ = __arr__;
+        this.__key__ = __key__;
     };
 
     ResponsiveTable.DEFAULTS = {
@@ -380,6 +395,7 @@
 
         // for each header column
         that.$hdrCells.each(function(i){
+
             var $th = $(this),
                 id = $th.prop('id'),
                 thText = $th.text();
@@ -402,7 +418,7 @@
                 that.$dropdownContainer.append($toggle);
 
                 $toggle.click(function(){
-                    // console.log("cliiiick!");
+                     console.log("cliiiick!");
                     $checkbox.prop('checked', !$checkbox.prop('checked'));
                     $checkbox.trigger('change');
                 });
@@ -423,11 +439,12 @@
                         event.stopPropagation();
                     })
                 .change(function(){ // bind change event on checkbox
+                    
                     var $checkbox = $(this),
                         val = $checkbox.val(),
                         //all cells under the column, including the header and its clone
                         $cells = that.$tableWrapper.find('#' + val + ', #' + val + '-clone, [data-columns~='+ val +']');
-
+                    //console.log( i + '-----' + that.__arr__ + '-----' + val );
                     //if display-all is on - save state and carry on
                     if(that.$table.hasClass('display-all')){
                         //save state
@@ -443,11 +460,11 @@
 
                     // loop through the cells
                     $cells.each(function(){
+                        //console.log( i + '-----' + that.__arr__ + '-----' + val );
                         var $cell = $(this);
-
                         // is the checkbox checked now?
                         if ($checkbox.is(':checked')) {
-
+                            
                             // if the cell was already visible, it means its original colspan was >1
                             // so let's increment the colspan
                             if($cell.css('display') !== 'none'){
@@ -457,6 +474,7 @@
                             // show cell
                             $cell.show();
 
+                            that.__arr__[i] = 1;
                         }
                       // checkbox has been unchecked
                       else {
@@ -468,8 +486,13 @@
                             else {
                                 $cell.hide();
                             }
+                            
+                            that.__arr__[i] = 0;
                         }
                     });
+
+                    //console.log(that.__arr__);
+                    localStorage[that.__key__] = that.__arr__.toString();   
                 })
                 .bind('updateCheck', function(){
                     if ( $th.css('display') !== 'none') {
@@ -622,6 +645,14 @@
             var $tableScrollWrapper = $(this);
             $tableScrollWrapper.responsiveTable($tableScrollWrapper.data());
         });
+
+        //hack
+        var _arr_ = localStorage[location.href.split('/').pop()].split(',');
+        for (var i = _arr_.length - 1; i >= 0; i--) {
+            if( _arr_[i] == 0 ){
+                $('.dropdown-menu li.checkbox-row').eq(i).trigger('click');    
+            }
+        }
     });
 
 
@@ -669,5 +700,8 @@
         } else {
             $('html').addClass('no-touch');
         }
+
+        
+        //console.log(localStorage[location.href.split('/').pop()]);
     });
 })(jQuery);
